@@ -49,7 +49,7 @@ public class ShortPath {
         }
     }
 // dijkstra最短路算法，平均时间复杂度为O(E+V^2)=O(V^2)
-    public int dijkstra(int from, int to, List<Integer> path)
+    public int Dijkstra(int from, int to, List<Integer> path)
     {
         boolean[] isadd=new boolean[V];                              //是否被添加到最短路径树中
         Node[] nodes = new Node[V];
@@ -86,15 +86,14 @@ public class ShortPath {
         int i=to;
         while (i!=-1)                                             //按照最短路径树找到最短路径
         {
-            if(nodes[i].dist<Integer.MAX_VALUE)
-                path.add(i);
+            path.add(i);
             i=nodes[i].parent;
         }
         Collections.reverse(path);
         return nodes[to].dist;
     }
 //Floyd算法，平均时间复杂度为O(V^3)，空间复杂度为O(V^2)
-    public int floyd(int from,int to,List<Integer> path)
+    public int Floyd(int from,int to,List<Integer> path)
     {
         int[][] dist = new int[V][V];                         //dist[i][j]表示i->j的距离
         int[][] path_node = new int[V][V];                    //k=path_node[i][j]表示路径i->j会经过k
@@ -127,5 +126,97 @@ public class ShortPath {
             path.add(i);
         path.add(j);
         return dist[from][to];
+    }
+
+    private static class Edge                               //定义Bellman_ford的边集
+    {
+        public int from;
+        public int to;
+        public int w;
+
+        public Edge(int from,int to,int w)
+        {
+            this.from=from;
+            this.to=to;
+            this.w=w;
+        }
+    }
+
+//Bellman_Ford算法求解单点源最短路
+//平均时间复杂度为O(EV)
+    public int Bellman_Ford(int from,int to,List<Integer> path)
+    {
+        List<Edge> edges = new ArrayList<>();
+        for(int i=0;i<V;i++)
+        {
+            for(int j=0;j<V;j++)
+            {
+                if(i!=j&&weight[i][j]!=Integer.MAX_VALUE)
+                    edges.add(new Edge(i, j, weight[i][j]));
+            }
+        }
+        int[] dist = new int[V];
+        int[] parent = new int[V];
+        Arrays.fill(dist,Integer.MAX_VALUE);                 //初始化边集和最短路径树的parent节点
+        Arrays.fill(parent, -1);
+        dist[from]=0;
+        for(int i=1;i<V;i++)                                //进行|V|-1次循环
+        {
+            for(int j=0;j<edges.size();j++)                 //遍历所有的边，进行松弛
+            {
+                if(dist[edges.get(j).from]!=Integer.MAX_VALUE&&edges.get(j).w!=Integer.MAX_VALUE&&dist[edges.get(j).from]+edges.get(j).w<dist[edges.get(j).to])
+                {
+                    dist[edges.get(j).to]=dist[edges.get(j).from]+edges.get(j).w;
+                    parent[edges.get(j).to]=edges.get(j).from;
+                }
+            }
+        }
+
+        boolean hasCycle=false;
+        for(int i=0;i<edges.size();i++)                      //检查有没有负环
+        {
+            if(dist[edges.get(i).from]!=Integer.MAX_VALUE&&edges.get(i).w!=Integer.MAX_VALUE&&dist[edges.get(i).to]>dist[edges.get(i).from]+edges.get(i).w)
+            {
+                hasCycle=true;
+                break;
+            }
+        }
+
+        if(hasCycle)
+        {
+            System.out.println("has cycle!");
+            System.exit(1);
+        }
+
+        int i=to;
+        while (i!=-1)
+        {
+            path.add(i);
+            i = parent[i];
+        }
+        Collections.reverse(path);
+        return dist[to];
+    }
+
+    public static void main(String[] args)
+    {
+        ShortPath shortPath = new ShortPath(6);
+        shortPath.insert(0, 4, 30);
+        shortPath.insert(0,5,100);
+        shortPath.insert(0,2,10);
+        shortPath.insert(1,2,5);
+        shortPath.insert(2,3,50);
+        shortPath.insert(4,3,20);
+        shortPath.insert(4,5,60);
+        shortPath.insert(3, 5, 10);
+        List<Integer> path1 = new ArrayList<>();
+        List<Integer> path2 = new ArrayList<>();
+        int from=1,to=5;
+        int dis = shortPath.Dijkstra(from,to,path1);
+        System.out.println(Arrays.toString(path1.toArray()));
+        System.out.println("min_path:"+dis);
+        int dis2=shortPath.Bellman_Ford(from,to,path2);
+        System.out.println(Arrays.toString(path2.toArray()));
+        System.out.println("min_path:"+dis2);
     }
 }
