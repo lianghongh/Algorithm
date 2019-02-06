@@ -95,15 +95,25 @@ class Morris
                 else
                 {
                     prev.right=null;
-                    TreeNode t=cur.left;
-                    List<TreeNode> temp=new LinkedList<>();
+                    Node pre=null;
+                    Node t=cur.left;
                     while(t!=null)
                     {
-                        temp.add(0,t);
-                        t=t.right;
+                        Node q=t.right;
+                        t.right=pre;
+                        pre=t;
+                        t=q;
                     }
-                    for(int i=0;i<temp.size();i++)
-                        System.out.print(temp.get(i).eval+" ");
+                    t=pre;
+                    pre=null;
+                    while(t!=null)
+                    {
+                        System.out.print(t.eval+" ");
+                        Node q=t.right;
+                        t.right=pre;
+                        pre=t;
+                        t=q;
+                    }
                     cur=cur.right;
                 }
             }
